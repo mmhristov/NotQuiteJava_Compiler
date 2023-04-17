@@ -1,0 +1,221 @@
+Understanding how a compiler works has been one of my goals
+since the beginning of my path as a computer science student
+and future software engineer.
+However, because of the university's program structure, it was not possible
+for me to take the course until the start of my master's degree.
+Before taking the course, I had been in contact with people, who I know to have
+knowledge in the topic of compilers. Most recommended the notorious 
+book by Aho et.\@ al called "Compilers: Principles, Techniques, and Tools" \cite{dragonBook},
+which is commonly known as the "dragon book" (for having a dragon on its cover).
+Reading the first few chapters of the book gave me an idea of
+what to expect from compilers, and it only strengthened my position that
+this topic is one that I would really like to deepen my knowledge in.
+And so I waited until the first year of my master's to finally take the
+course that I wanted to do for the majority of my bachelor's degree.
+
+On the first lecture of the course, I learned that not only will I understand 
+in due time (and effort) how compilers work, but
+that I will have the opportunity to write one from scratch!
+I did not know before that day that writing a compiler is something
+that people really do in practice as we live in a time, in which 
+there already exist all these big, complex and seemingly perfect languages
+we use on a daily basis. Furthermore, it was revealed that
+the exam would not be a conventional written or oral exam, but a portfolio exam,
+in which for a set period of time we would be tasked with building
+different aspects and features of a compiler.
+It is safe to say, this was the perfect match for my ambition of learning more about compilers.
+
+Doing the corresponding exercises for the course was challenging and 
+established important recurring design patterns like visitors, matchers, and more.
+The time and effort investment in each sheet helped a lot 
+for when starting to program the portfolio project, as the structure was familiar and mostly
+required concentrating on the "what" and "how", not the "where".
+While the freedom that you are given for implementing a specific task was
+quite welcome, there also came a negative with it.
+If one programs in a direction, which in time turns out to be wrong, he would need to
+almost start over, costing a lot of time. Because the exercises were not
+obligatory, one could still get away with not doing everything perfectly.
+However, what for me was most valuable is the experience I accumulated
+while doing the exercise sheets.
+
+I began programming the portfolio on the first day the task description was released.
+My original idea was to start with making all the required changes in the grammar,
+but after having some troubles in understanding the supposed behavior of our
+language's multidimensional arrays, regarding the empty brackets having no specified length,
+I postponed the multidimensional array implementation until later.
+The main reason was that the modifications in the parsing phase do not only
+have to do with changing the language that is accepted by our compiler, but also
+with creating the corresponding data structures to convey its meaning.
+Therefore, I just needed a bit of time to process how the internal representation of arrays
+in our compiler needs to be changed to reflect the intuition of multidimensionality.
+
+The parsing and analysis phase for interfaces and classes was
+quite straightforward and was done by the third day the exam had started.
+It felt really good writing a large amount of code for a 
+relatively small amount of time. 
+Since the template's grammar included all necessary structures for
+the parsing of inheritance of classes, I had the impression that inheritance is
+also part of the exam's requirements. By the time I understood that this is
+not the case, I had already implemented its analysis.
+However, it did not cost me a significant amount of time and I do not regret it.
+Thinking back, I would
+have probably done it even if I had known that it is not required to do so.
+
+While programming the analysis phase for interfaces, I was confronted with my first challenge.
+As at the time of parsing, our compiler does not know whether a type identifier
+is an interface or a class, it was necessary to create a new \textit{NQJType}
+called \textit{NQJTypeInterfaceOrClass} in the \textit{.ast} file in order to
+convey this meaning to the analysis phase.
+The analysis phase can then find out what it is, having access to
+all interface- and class declarations.
+Before I came up with this simple and quite obvious solution while
+running my favorite route on a chilly morning, I tried various other wrong
+modeling ideas. This experience taught me that it is never a good idea
+to start a new, big addition to your program too late at night.
+As the russians say, "the morning is wiser than the evening".
+
+After the analysis of interfaces and classes, it was time to
+work on their translation.
+This took a bit longer and involved trying out many ideas before
+a clear picture of the translator's workflow and behavior was
+formed in my mind. At first, I still wanted to translate class inheritance, but
+I quickly decided against implementing it, as it would have just complicated
+the task unnecessarily. Additionally, it was my intention to implement
+both class methods and class fields at the same time.
+Even then, it seemed to not be a brilliant idea, but
+my assumption was that in the case that everything goes wrong, making me
+start over, I could still reuse the written code as a basis for later versions. 
+As expected, nothing in the translation of classes worked.
+After a few days of commenting out code and trying to debug
+each aspect of the translation separately, I decided to
+approach the task in a more modular way, as Prof. Bieniusa had also advised
+us to do before the start of the portfolio exam.
+First, my goal was to implement class fields, which was done 
+fairly quickly and without any issues.
+Then, it was time for methods, which for the most part was
+a game of finding out how to provide
+the data needed in the many parts of the translation phase.
+Usually, I started with the bottom-most instruction
+of the \textit{minillvm} wrapper library
+in a translation operation and worked my way up.
+This was immensely useful, since it enabled me to
+understand what kind of data I needed in order for a translation to work.
+After that, I mostly had to create new data structures (usually maps),
+fill them and use their content where necessary.
+Throughout the portfolio project instead of the usual "get" methods
+of data structures, I tried to
+consistently take a caching approach, which would return the element if present
+in the data structure and if not, would create it (or translate it) 
+first and the return it. This was done as a "fail-safe" mechanism,
+making sure that for example constructor procedures are always
+translated, no matter when.
+
+The hardest part of the translation phase was undoubtedly working with
+pointers. This was especially the case
+while trying to implement method calls.
+It was often very difficult to keep in mind what the object that you
+are working with really is. Is it a pointer to an object?
+Is it a pointer to a pointer to an object?
+This is obviously difficult to debug.
+Talking with other participants of the exam did not really help at that point, 
+since many of them were still concentrated on the analysis phase.
+However, what helped me solve these problems was making a visualization of
+the data-flow on paper.
+
+The idea of translating interface objects is in a way quite straightforward.
+Since underneath every interface object there must be a class object,
+which implements the interface, there are in theory almost no
+adjustments that are needed, provided class translation is implemented.
+This is why I decided to save in the analysis phase for each assignment of the pattern 
+"\textit{Interface1} \textbf{a} = \textbf{new} \textit{ClassA()}", where \textit{ClassA}
+implements \textit{Interface1}, the class' reference in the internal interface object.
+This way, I was able to match each
+interface variable to its class object in the translation phase.
+However, much later while writing more tests it turned out that there
+is are two scenarios, which
+do not work as expected, regarding interfaces as argument types of functions and
+interface polymorphism.
+Hence, if there is one thing that I would change if I had to start over, it would
+be the handling of interfaces in the translation phase.
+Possibly, I would not set class objects to interface representations in the analysis
+phase, but actually the other way around. This way, each class object
+will be able to know what interfaces it really is. However,
+I do not think that the general idea is entirely wrong, but only that
+the timing where we assign a class object to an interface object is not correct.
+It would make more sense to handle this in the translation phase: whenever
+a new assignment to a temporary variable, containing an interface variable is made, 
+we update its type accordingly too.
+This is currently missing in the project.
+Due to the time constraints, I decided not to spend much further time looking into this issue.
+This would be the first thing to be changed for a second version or iteration of the project.
+
+After implementing each small part of the portfolio I was testing
+its correctness by writing small file unit tests.
+There were numerous times were the test file was not a valid
+\textit{notquitejava} program and instead of proof-reading the code,
+I immediately questioned my implementation.
+In most cases, it turned out that I was using some syntax that is not
+correct, for example a declaration and assignment as a one-liner:
+"\textit{int} \textbf{x} = \textbf{2};".
+Therefore, it is safe to say that my compiler knows its language much
+better than I do, and I should probably be questioning myself more often, rather than
+directly blaming computers for my own mistakes.
+
+All in all, I was done with the parsing, analysis and translation
+of classes and interfaces in less than two weeks.
+After that, I took upon the task of implementing multidimensional arrays.
+The first challenge was finding out what kind of arrays are accepted
+by our template.
+This was a bit confusing at first, since the original accepted arrays
+exhibited some characteristics of multidimensionality.
+In particular, the compiler accepted nested arrays, i.e.\@ multidimensional arrays,
+in which each component is of length 1.
+Once I had a clear picture of the status quo, I was quick 
+to make the necessary modifications on the grammar level
+and in the analysis phase.
+The translation, however, was not as simple.
+As I was struggling to understand how the
+template's implementation of one-dimensional arrays works, 
+I was hesitant to try things out.
+I felt like there are just too many question marks in my mind, regarding
+what an implementation of multidimensional arrays should look like, and so
+I did not know where to even begin.
+I tried some ideas out, but I could not be sure that I am working
+in a correct direction. Since I did not manage to do the whole implementation,
+I have no idea whether I was close or far to a working translation of multidimensional arrays.
+Additionally, outside factors like for example other university exams
+were taking priority over spending even more time
+implementing this smaller feature in the grand scheme of the portfolio.
+
+If I had to choose one aspect of the portfolio that I am most proud of,
+it would for sure be the translation of classes.
+In the beginning I was so frightened of the whole topic of V-Tables,
+of all these data structures that I need and of all the intimidating
+\textit{minillvm} wrapper functions, that I could not imagine how I would implement
+such a complex translation.
+This is also the aspect of the project, which was hardest to implement, but also the one,
+which I learned from the most. Even though I did not manage to implement
+multidimensional arrays, I stand by my view that the translation of classes
+is much more difficult to do right in comparison to the translation of multidimensional arrays.
+
+In conclusion, I would shortly like to share my thoughts on the 
+topics that were presented in the lecture.
+Each class, I learned so many new things about compilers and 
+programming languages as a whole that my way of thinking
+about programming changed too. Mostly in regard to doing
+code optimizations by hand.
+Every one of the in the lecture presented topics served a purpose and
+taught me quite much.
+What I was personally looking forward to seeing
+is more discussions on the topic of garbage collection, which, understandably, due to time
+constraints was cut a bit short.
+In particular, I would be interested to understand how some programming languages approach this problem by
+adapting their type system (e.g.\@ \textit{Rust} \cite{rust}).
+. That being said, the basic
+algorithms and ideas in relation to garbage collection were presented, 
+and one could probably do a full lecture just on that topic alone. 
+
+Lastly, I would like to thank everyone involved in the course. Special thanks
+to Prof.\@ Dr.\@ Annette Bieniusa, Mr.\@ Albert Schimpf and my group partner
+for the exercises Mr.\@ Gabriel Sánchez Gänsinger for making this lecture 
+so interesting and fun.

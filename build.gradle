@@ -1,0 +1,187 @@
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
+
+// Apply the java plugin to add support for Java
+apply plugin: 'java'
+
+// plugins for generating IDE projects
+apply plugin: 'eclipse'
+apply plugin: 'idea'
+apply plugin: "checkstyle"
+
+String genDir = "$projectDir/src-generated"
+
+sourceSets {
+    main {
+        java {
+            srcDir 'src/main/java'
+            srcDir genDir
+        }
+    }
+}
+
+// In this section you declare where to find the dependencies of your project
+repositories {
+    mavenLocal()
+    mavenCentral()
+    maven { url 'https://jitpack.io' }
+    jcenter()
+}
+
+
+// In this section you declare the dependencies for your production and test code
+dependencies {
+    // java cup parser generator
+    compileOnly 'com.github.peterzeller:javacup:11c'
+    // Google guava
+    compileOnly 'com.google.guava:guava:30.1-jre'
+
+    // jflex scanner generator
+    compileOnly 'de.jflex:jflex:1.6.1'
+
+    // tool for generating AST-classes
+    compileOnly 'com.github.albsch:abstractsyntaxgen:0.3.2'
+
+    // java cup runtime library
+    implementation 'com.github.vbmacher:java-cup-runtime:11b'
+
+    // NotQuiteJava transpile for testing
+    testImplementation 'com.github.albsch:NQJ-transpiler:v1.3.1'
+
+    // JUnit for testing
+    testImplementation 'junit:junit:4.12'
+
+}
+
+task genJflex {
+    description = 'Compile jflex specifications'
+    fileTree(dir: 'src/main/java', include: '**/*.flex').each { file ->
+
+        Pattern PACKAGE_PATTERN = Pattern.compile("package\\s+(\\S+)\\s*;");
+        Pattern CLASS_PATTERN = Pattern.compile("%class\\s+(\\S+)");
+        String fileContents = file.text
+
+        Matcher matcher = PACKAGE_PATTERN.matcher(fileContents);
+        String packageName = "";
+        if (matcher.find()) {
+            packageName = matcher.group(1);
+        }
+
+        matcher = CLASS_PATTERN.matcher(fileContents);
+        String className = "Yylex";
+        if (matcher.find()) {
+            className = matcher.group(1);
+        }
+
+        String targetDir = "$genDir/" + packageName.replace(".", "/")
+        String output = "$targetDir/" + className + ".java"
+
+        inputs.file(file)
+        outputs.file(output)
+
+        doLast {
+            javaexec {
+                classpath configurations.compileClasspath
+                main = "jflex.Main"
+                args = [file, "-d", "$targetDir/"]
+            }
+        }
+    }
+}
+
+task genCup {
+    description = 'Compile java cup specifications'
+    fileTree(dir: 'src/main/java', include: '**/*.cup').each { file ->
+
+        Pattern PACKAGE_PATTERN = Pattern.compile("package\\s+(\\S+)\\s*;");
+        Pattern CLASS_PATTERN = Pattern.compile("class\\s+(\\S+)\\s*;");
+        String fileContents = file.text
+
+        Matcher matcher = PACKAGE_PATTERN.matcher(fileContents);
+        String packageName = "";
+        if (matcher.find()) {
+            packageName = matcher.group(1);
+        }
+
+        matcher = CLASS_PATTERN.matcher(fileContents);
+        String className = "parser";
+        String symName = "sym"
+        if (matcher.find()) {
+            className = matcher.group(1);
+            symName = className + "Sym";
+        }
+
+        String targetDir = "$genDir/" + packageName.replace(".", "/")
+
+        inputs.file(file)
+        outputs.file("$targetDir/" + className + ".java")
+        outputs.file("$targetDir/" + symName + ".java")
+
+        doLast {
+            new File(targetDir).mkdirs()
+            javaexec {
+                classpath configurations.compileClasspath
+                main = "java_cup.Main"
+                args = ["-dump", "-nonterms", "-destdir", targetDir, file]
+            }
+        }
+    }
+}
+
+task genAst {
+    description = 'Compile ast specifications'
+    fileTree(dir: 'src/main/java', include: '**/*.ast').each { file ->
+
+        Pattern PACKAGE_PATTERN = Pattern.compile("package\\s+(\\S+)\\s*;");
+        String fileContents = file.text
+
+        Matcher matcher = PACKAGE_PATTERN.matcher(fileContents);
+        String packageName = "";
+        if (matcher.find()) {
+            packageName = matcher.group(1);
+        }
+
+        String targetDir = "$genDir/" + packageName.replace(".", "/")
+
+        inputs.file(file)
+        outputs.dir(targetDir)
+
+        doLast {
+            javaexec {
+                classpath configurations.compileClasspath
+                main = "asg.Main"
+                args = [file, targetDir]
+            }
+        }
+    }
+}
+
+task gen {
+    description "Generates code from various input files"
+}
+gen.dependsOn genJflex
+gen.dependsOn genCup
+gen.dependsOn genAst
+
+compileJava.dependsOn gen
+compileJava {
+    options.encoding = 'UTF-8'
+    options.compilerArgs << "-Xlint:all" << "-Xlint:-fallthrough"
+}
+
+// delete the generated sources on clean
+clean.doFirst {
+    delete genDir
+}
+
+checkstyle {
+    toolVersion = '8.38'
+    configFile = file("$projectDir/rules.xml")
+    showViolations = true
+    ignoreFailures = false
+}
+
+tasks.withType(Checkstyle) {
+    exclude '**/notquitejava/**'
+    exclude '**/minillvm/ast/**'
+}

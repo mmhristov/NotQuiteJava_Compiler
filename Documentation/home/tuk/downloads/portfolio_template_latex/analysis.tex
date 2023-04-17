@@ -1,0 +1,155 @@
+\section{Analysis}
+\label{sec:analysis}
+As interfaces and classes are quite intertwined in this phase, 
+this section we will separate into subsections, each of which covering
+the changes to a whole file (or class).
+
+\subsection{ClassType.java}
+\label{subsec:classType}
+This class is our internal representation of classes and is a subtype of the class \textit{Type}.
+It has the following fields:
+\begin{itemize}
+    \item \textit{String} \textbf{name}: the name of the class.
+    \item \textit{ClassType} \textbf{superClass}: the direct super-class of the class.
+    \item \textit{List<InterfaceType>} \textbf{implementsInterface}: the interfaces it implements.
+    \item \textit{Map<String, NQJVarDecl>} \textbf{fields}: the fields of the class.
+    \item \textit{Map<String, NQJFunctionDecl>} \textbf{methods}: the methods of the class.
+\end{itemize}
+These fields are quite self-explanatory, having in mind that identifiers 
+(e.g.\@ class names, method names) are unique in our compiler.
+
+Apart from some "getter" and "setter" methods, there is one noteworthy method, which
+overrides its super-class' one, namely \textit{isSubTypeOf(ClassType \textbf{other})}.
+This method is important in the analysis phase whenever we need
+to check two objects' subtype relation (e.g.\@ assignments).
+There are generally two cases of interest, depending on the argument's type
+\textbf{other}. Its type is either an interface or another class.
+In the case it is an interface, we check whether interface \textbf{other} is contained
+in the list of interfaces our current class (\textbf{this} object) implements.
+If the argument's type is a class, then we recursively check in the ancestor tree
+of the current class whether the argument is present or not.
+This can be observed in the code snippet below.
+\lstinputlisting[language=java, linerange={87-101}, label={code:classTypeInheritance}]{"../../../../../src/main/java/analysis/ClassType.java"}
+
+\subsection{InterfaceType.java}
+Similar to the class \textit{ClassType} presented in \Cref{subsec:classType},
+\textit{InterfaceType} is our internal representation of interfaces.
+The class is a subtype of \textit{Type} and contains the following fields:
+\begin{itemize}
+    \item \textit{String} \textbf{name}: the name of the class.
+    \item \textit{ClassType} \textbf{classImplementation}: the interface object's current class implementation.
+    \item \textit{List<InterfaceType>} \textbf{implementsInterface}: the interfaces it implements.
+    \item \textit{Map<String, NQJFunctionDecl>} \textbf{functions}: the methods of the interface.
+\end{itemize}
+Notably, as we will see later when we observe the changes made to the analysis of assignments,
+we save the interface object's class implementation in the field \textbf{classImplementation}.
+This field is later used in the translation phase to create the corresponding class object.
+
+The  \textit{isSubTypeOf(ClassType \textbf{other})} function here is quite simple.
+As we do not consider sub- or super-interfaces in our compiler, the only comparison to be done is
+to check if \textbf{other} is the same interface as the current one (meaning both have the same name).
+
+\subsection{NameTable.java}
+After we have covered the internal representation of interfaces and classes, we can proceed to
+one of the central files of the analysis phase, namely NameTable.\@java,
+in which most of the type-checking and analysis operations of classes and interfaces
+are being done.
+
+Let us start with the necessary data structures, which we have defined for our needs, visible in the code snippet below.
+The comments in the code explain each of the data structure's use-case.
+\lstinputlisting[language=java, linerange={16-26, 29-39}, label={code:nameTableMaps}]{"../../../../../src/main/java/analysis/NameTable.java"}
+
+Now we will look at how these data structures are being filled.
+The entry point is the constructor of the \textit{NameTable} object.
+The idea was to first fill the maps, storing the \textit{NQJ} classes, named 
+\textbf{globalClasses} and \textbf{globalInterfaces} and then use these to
+create their internal representations (\textit{ClassType} and \textit{InterfaceType})
+and store them into the maps \textbf{classTypes} and \textbf{interfaceTypes}.
+One of the reasons why this was done is that it enables us to check whether class identifiers and interface identifiers are unique
+when filling the \textit{NQJ} maps.
+Of course, we here also do not allow a class to have the same name as an interface and vice versa.
+
+The functions \textit{createAndAddClassType()} and 
+\textit{createAndAddInterfaceType()} are responsible for the creation of the internal types.
+Let us take a closer look at both.
+In \textit{createAndAddInterfaceType()} we create an \textit{InterfaceType} object from
+an \textit{NQJInterfaceDecl} object and add it to the \textit{interfaceTypes} map.
+Additionally, we check if function names are unique in the current interface declaration
+and throw errors accordingly.
+The functions \textit{createAndAddClassType()} is a bit more sophisticated, but
+follows the same idea as in the interfaces' case. 
+We create a \textit{ClassType} object, throwing errors when we encounter
+some problems in the class declaration. The class' methods are not
+being verified here as we get this more or less "for free" from
+the already existing procedure in Analysis.java, which will be covered later.
+Errors are thrown here in the following cases:
+\begin{itemize}
+    \item Field names are not unique.
+    \item Method names are not unique
+    \item An interface that the class implements is not defined.
+    \item The class does not implement all functions defined its interfaces.
+    \item The class' super-class is not defined.
+    \item An inheritance cycle was detected.
+\end{itemize}
+Since if the super-class of the current class has not yet been created at the point
+of construction, we recursively create the super-class first 
+(along with its whole ancestor tree).
+By passing a list of classes that represents the inheritance tree, we can
+check for inheritance cycles quite easily. 
+As this is not part of the examination criteria and was done just
+for fun, we will skip further explanations here.
+
+\subsection{Analysis.java}
+This is the central entry point of the analysis phase. The class creates the
+\textit{NameTable} object and using the visitor paradigm starts "visiting"
+each component of the program that is to be analyzed.
+The points of interest for us are the visitor methods for the classes
+\textit{NQJInterfaceDecl} and \textit{NQJClassDecl}.
+Let us now examine these three visitor methods.
+
+The visitor method for \textit{NQJInterfaceDecl} objects' job is to
+verify the method declarations that an interface contains.
+This is done with the already available in the template method that verifies global functions.
+This is possible as interface methods do not contain an implementation (i.e.\@ their bodies are empty),
+skipping most of the existing computations and type checking.
+
+In the case of \textit{NQJClassDecl}, its visitor method's idea is similar to the 
+visitor for interfaces, with the exception that the class' fields are added
+to the context data structure before verifying its methods.
+
+As at the point of parsing we can not distinguish between an identifier that
+is a class and an identifier that is an interface, we additionally created
+a generated class called \textit{TypeInterfaceOrClass}, which expresses
+this intuition. 
+This class is then used in the function \textit{Analysis.type(NQJType \textbf{type})}
+to retrieve either of those types.
+
+\subsection{ExprChecker.java}
+This class is used to type-check all expressions by using the matcher paradigm. 
+The necessary adjustments to this file were in the matcher methods for
+method calls, class field accesses, new object creations, and new array creations.
+An underlying commonality between these methods is the fallback behaviour, which
+returns a \textbf{Type.ANY} whenever an error is encountered in order to continue 
+finding as much errors as possible.
+Let us inspect each of these methods closer.
+
+The matcher method for method calls can be divided into two
+parts: receiver checking and method checking. First, the receiver of the called method is being verified. This means
+that the type-checker searches for the interface or the class declaration of the receiver.
+If it does not succeed, an error is thrown.
+If it succeeds in finding the interface or class, the type-checker
+searches for a method declaration in the object that corresponds to the given method name and throws an error
+if necessary. Once it succeeds, the type-checker continues with the checking of the called method itself.
+Here, some already existing code is used to verify the function call arguments,
+which logs errors whenever the arguments and the parameters do not match. 
+
+In the matcher for field accesses, we first verify that the receiver of the operation
+is a class and log an error if it is not.
+Then, we check if the class really contains such a field in its declaration.
+
+For the creation of new objects we only need to verify that a corresponding
+class declaration exists.
+
+We modified the matcher for new array creations to analyze multidimensional arrays.
+The new addition is an iterative loop that verifies
+that each dimension's length, which is encoded as an expression, is an integer.
