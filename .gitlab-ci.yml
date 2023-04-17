@@ -1,0 +1,22 @@
+image: gradle:jdk17
+
+stages:
+  - portfolio
+
+before_script:
+  - apt-get update && apt-get -y install llvm clang
+
+compile:
+  stage: portfolio
+  script:
+    - ./gradlew compileJava
+
+checkStyle:
+  stage: portfolio
+  script:
+    - ./gradlew checkstyleMain
+
+build:
+  stage: portfolio
+  script:
+    - ./gradlew build
