@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<checkstyle version="8.38">
+<file name="/Users/marian.hristov/Uni/Compiler/hristov/src/main/java/analysis/Type.java">
+</file>
+<file name="/Users/marian.hristov/Uni/Compiler/hristov/src/main/java/analysis/Analysis.java">
+</file>
+<file name="/Users/marian.hristov/Uni/Compiler/hristov/src/main/java/analysis/TypeContext.java">
+</file>
+<file name="/Users/marian.hristov/Uni/Compiler/hristov/src/main/java/analysis/TypeContextImpl.java">
+</file>
+<file name="/Users/marian.hristov/Uni/Compiler/hristov/src/main/java/analysis/TypeError.java">
+</file>
+<file name="/Users/marian.hristov/Uni/Compiler/hristov/src/main/java/analysis/ExprChecker.java">
+</file>
+<file name="/Users/marian.hristov/Uni/Compiler/hristov/src/main/java/analysis/ClassType.java">
+</file>
+<file name="/Users/marian.hristov/Uni/Compiler/hristov/src/main/java/analysis/InterfaceType.java">
+</file>
+<file name="/Users/marian.hristov/Uni/Compiler/hristov/src/main/java/analysis/ArrayType.java">
+</file>
+<file name="/Users/marian.hristov/Uni/Compiler/hristov/src/main/java/analysis/NameTable.java">
+</file>
+<file name="/Users/marian.hristov/Uni/Compiler/hristov/src/main/java/frontend/SourcePosition.java">
+</file>
+<file name="/Users/marian.hristov/Uni/Compiler/hristov/src/main/java/frontend/AstPrinter.java">
+</file>
+<file name="/Users/marian.hristov/Uni/Compiler/hristov/src/main/java/frontend/Main.java">
+</file>
+<file name="/Users/marian.hristov/Uni/Compiler/hristov/src/main/java/frontend/AstHelper.java">
+</file>
+<file name="/Users/marian.hristov/Uni/Compiler/hristov/src/main/java/frontend/StatementChecker.java">
+</file>
+<file name="/Users/marian.hristov/Uni/Compiler/hristov/src/main/java/frontend/SyntaxError.java">
+</file>
+<file name="/Users/marian.hristov/Uni/Compiler/hristov/src/main/java/frontend/NQJFrontend.java">
+</file>
+<file name="/Users/marian.hristov/Uni/Compiler/hristov/src/main/java/translation/ExprLValue.java">
+</file>
+<file name="/Users/marian.hristov/Uni/Compiler/hristov/src/main/java/translation/StmtTranslator.java">
+</file>
+<file name="/Users/marian.hristov/Uni/Compiler/hristov/src/main/java/translation/ExprRValue.java">
+<error line="238" column="20" severity="warning" message="Local variable name &apos;vTable&apos; must match pattern &apos;^[a-z]([a-z0-9][a-zA-Z0-9]*)?$&apos;." source="com.puppycrawl.tools.checkstyle.checks.naming.LocalVariableNameCheck"/>
+</file>
+<file name="/Users/marian.hristov/Uni/Compiler/hristov/src/main/java/translation/Translator.java">
+<error line="49" column="43" severity="warning" message="Member name &apos;vTableStructs&apos; must match pattern &apos;^[a-z][a-z0-9][a-zA-Z0-9]*$&apos;." source="com.puppycrawl.tools.checkstyle.checks.naming.MemberNameCheck"/>
+<error line="56" column="39" severity="warning" message="Member name &apos;vTableGlobals&apos; must match pattern &apos;^[a-z][a-z0-9][a-zA-Z0-9]*$&apos;." source="com.puppycrawl.tools.checkstyle.checks.naming.MemberNameCheck"/>
+<error line="151" column="20" severity="warning" message="Local variable name &apos;vTable&apos; must match pattern &apos;^[a-z]([a-z0-9][a-zA-Z0-9]*)?$&apos;." source="com.puppycrawl.tools.checkstyle.checks.naming.LocalVariableNameCheck"/>
+<error line="156" column="16" severity="warning" message="Local variable name &apos;vTableGlobal&apos; must match pattern &apos;^[a-z]([a-z0-9][a-zA-Z0-9]*)?$&apos;." source="com.puppycrawl.tools.checkstyle.checks.naming.LocalVariableNameCheck"/>
+</file>
+<file name="/Users/marian.hristov/Uni/Compiler/hristov/src/main/java/minillvm/analysis/LlvmTypeErrorCycle.java">
+</file>
+<file name="/Users/marian.hristov/Uni/Compiler/hristov/src/main/java/minillvm/analysis/Typechecker.java">
+</file>
+<file name="/Users/marian.hristov/Uni/Compiler/hristov/src/main/java/minillvm/analysis/ExpectedType.java">
+</file>
+<file name="/Users/marian.hristov/Uni/Compiler/hristov/src/main/java/minillvm/analysis/Checks.java">
+</file>
+<file name="/Users/marian.hristov/Uni/Compiler/hristov/src/main/java/minillvm/analysis/LlvmTypeError.java">
+</file>
+<file name="/Users/marian.hristov/Uni/Compiler/hristov/src/main/java/minillvm/analysis/BasicBlocks.java">
+</file>
+<file name="/Users/marian.hristov/Uni/Compiler/hristov/src/main/java/minillvm/printer/PrettyPrinter.java">
+</file>
+<file name="/Users/marian.hristov/Uni/Compiler/hristov/src/main/java/minillvm/printer/SourceInfo.java">
+</file>
+<file name="/Users/marian.hristov/Uni/Compiler/hristov/src/main/java/minillvm/printer/DuplicateNames.java">
+</file>
+<file name="/Users/marian.hristov/Uni/Compiler/hristov/src/main/java/main/NotQuiteJavaCompiler.java">
+</file>
+</checkstyle>

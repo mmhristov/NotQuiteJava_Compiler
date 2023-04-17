@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="notquitejava.translation.SimpleTests" tests="5" skipped="0" failures="0" errors="0" timestamp="2023-03-08T11:27:19" hostname="Marians-MBP" time="0.715">
+  <properties/>
+  <testcase name="println" classname="notquitejava.translation.SimpleTests" time="0.14"/>
+  <testcase name="empty" classname="notquitejava.translation.SimpleTests" time="0.132"/>
+  <testcase name="test0" classname="notquitejava.translation.SimpleTests" time="0.155"/>
+  <testcase name="test1" classname="notquitejava.translation.SimpleTests" time="0.144"/>
+  <testcase name="test2" classname="notquitejava.translation.SimpleTests" time="0.144"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

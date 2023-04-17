@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="notquitejava.translation.FunctionTests" tests="6" skipped="0" failures="0" errors="0" timestamp="2023-03-08T11:27:17" hostname="Marians-MBP" time="1.164">
+  <properties/>
+  <testcase name="callParams2" classname="notquitejava.translation.FunctionTests" time="0.255"/>
+  <testcase name="call1" classname="notquitejava.translation.FunctionTests" time="0.205"/>
+  <testcase name="call2" classname="notquitejava.translation.FunctionTests" time="0.195"/>
+  <testcase name="call3" classname="notquitejava.translation.FunctionTests" time="0.225"/>
+  <testcase name="call4" classname="notquitejava.translation.FunctionTests" time="0.141"/>
+  <testcase name="callParams" classname="notquitejava.translation.FunctionTests" time="0.141"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

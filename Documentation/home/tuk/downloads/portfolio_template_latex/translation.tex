@@ -1,0 +1,87 @@
+\section{Translation}
+\label{sec:translation}
+As the translation of multidimensional arrays was not finished
+during the examination period and at the point of writing,
+only the translation of classes and interfaces will be presented here.
+
+\subsection{Classes}
+\subsubsection{Class Translation and Default Constructor}
+\label{subsubsec:classTranslation}
+The entry point for the translation of classes is the function \textit{translate()}
+in the file Translator.java.
+We translate all classes before everything else (e.g.\@ global functions, main function), so that
+classes are known and ready to be used.  
+The translation of classes consits of three main parts, which can be observed in the following code snippet:
+\lstinputlisting[language=java, linerange={86-102}, label={code:translateClasses}]{"../../../../../src/main/java/translation/Translator.java"} 
+
+The method \textit{initClass()} is responsible for the initialization and storing of
+its corresponding \textit{TypeStruct} object.
+This is done before the actual translation, since we want to make
+all classes known beforehand in order to avoid the problem of translating 
+a class, which has an unknown class as a field.
+Next, for the same reason we initialize all structures, required for
+the methods of a class, so that similar
+errors are avoided.
+After that, the \textit{translateClass()} method is called, where 
+the main translation of a class happens.
+In this function, first the V-Table is initialized and filled, along with all
+its corresponding internal datastructures.
+Then, we retrieve the already initialized. but empty \textit{TypeStruct} object
+and fill its fields, the first one being the pointer to the V-Table.
+This can be obseved in the code snippet below:
+\lstinputlisting[language=java, linerange={167-182}, label={code:fillFields}]{"../../../../../src/main/java/translation/Translator.java"}
+After we have filled the class' \textit{TypeStruct}, we translate all
+class methods with the already existing code that translates global
+functions, with a minor modification to skip the translation of
+the V-Table pointer.
+Lastly, the default constructor for the class is generated, which allocates
+memory for the class and provides default values for its fields.
+
+\subsubsection{Field Access in Translated Classes}
+The field access matcher function can be found in ExprLValue.java.
+Its corresponding method retrieves the 
+class' \textit{TypeStruct} object that was created in \Cref{subsubsec:classTranslation}
+and searches for the field with the given name.
+This can be seen in the code snippet below.
+\lstinputlisting[language=java, linerange={74-85}, label={code:getField}]{"../../../../../src/main/java/translation/ExprLValue.java"}
+Since the original idea was to also handle classes with inheritance, we start the search
+for the field from the end of the field list in order to handle field shadowing.
+Nonetheless, as we decided to not implement inheritance because of time constraints,
+the order of iteration does not matter here.
+
+It is guaranteed by our analysis phase that the field will be present
+in the class and so no additional error handling is necessary.
+Therefore, a reference to a temporary variable is returned, which contains the address to the
+field that is to be accessed.
+
+In addition to the change that was made in the corresponding matcher for field accesses,
+we modified the matcher for the variable usage as well.
+This enables the user to use a field of a class in any of its methods, without having
+to always use the keyword "this" as receiver.
+
+\subsubsection{Method Calls of Translated Classes}
+Method calls are handled in the matcher function \textit{case\_MethodCall(NQJMethodCall \textbf{e})} of the file ExprRValue.java.
+Let us examine its workflow, which can be separated into three parts.
+The \red{first part} finds the pointer to the method that is to be called by
+loading it from the V-Table of the class.
+The \blue{second part} constructs the required parameters for the method call,
+including the "this" object as the first parameter.
+The \pink{third part} of the matcher function is the action of calling the method,
+found in \red{part one}, with the parameters, constructed in \blue{part two}.
+
+\subsection{Interfaces}
+The analysis phase should guarantee that each interface object in the program
+is used correctly. Therefore, in the translation phase
+it is only a matter of finding and, if required, translating the class,
+with which the interface variable is initialized.
+For this, it was necessary to pass some additional
+information from the analysis phase to the translation phase (file Analysis.java).
+What we decided on doing is for each assignment
+to an interface variable to save a reference to the class it is assigned to
+in the \textit{InterfaceType} object.
+This can be observed below:
+\lstinputlisting[language=java, linerange={129-143}, label={code:assignmentInterface}]{"../../../../../src/main/java/analysis/Analysis.java"} 
+
+The reference can then be used in the translator to fetch the class
+that is assigned to the interface object.
+\lstinputlisting[language=java, linerange={488-491}, label={code:translatorInterface}]{"../../../../../src/main/java/translation/Translator.java"}
